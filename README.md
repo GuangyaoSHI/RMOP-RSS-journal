@@ -8,3 +8,5 @@
  MCTS is in policies
 
  gamestate is a representation of a game
+
+test pycharm in my linux machine
