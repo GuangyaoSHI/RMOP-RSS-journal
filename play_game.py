@@ -2,7 +2,7 @@
 """
 Created on Thu Dec 31 10:36:52 2020
 
-@author: sgyhi
+@author: sgyhit
 """
 
 from gamestate import *
