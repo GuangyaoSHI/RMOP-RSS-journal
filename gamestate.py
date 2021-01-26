@@ -12,21 +12,22 @@ Multi-robot Orienteering Problem as a game
 """
 import networkx as nx
 import copy
-from itertools import combinations  
+from itertools import combinations
+
 
 class GameState:
     def __init__(self, G, starts):
-        #starts = {robot:[position, attack_indicator]}
-        #define world map
+        # starts = {robot:[position, attack_indicator]}
+        # define world map
         self.G = G
         self.horizon = 4
         # turn = 'robot' or 'attacker'
         # self.turn will decide the legal_moves
         # and horizon
-        self.turn = 'robot'
-        #number of total attacks
+        self.turn = 'attacker'
+        # number of total attacks
         self.ALPHA = 2
-        #number of attacks left
+        # number of attacks left
         self.alpha = 2
         #        
         # trajectories/paths of robots and attackers
@@ -34,10 +35,10 @@ class GameState:
         self.paths_robots = {}
         self.paths_attackers = {}
         for robot in starts:
-            self.paths_robots[robot] = [starts[robot][0]] 
+            self.paths_robots[robot] = [starts[robot][0]]
             self.paths_attackers[robot] = [starts[robot][1]]
-        #starts is a dictionary of starting positions of robots
-        #starts = {robot:position}
+        # starts is a dictionary of starting positions of robots
+        # starts = {robot:position}
         self.currNode = starts
 
     # GameState needs to be hashable so that it can be used as a unique graph
@@ -50,43 +51,43 @@ class GameState:
 
     def __hash__(self):
         return hash(self.__key())
-    
-    #no longer valid
+
+    # no longer valid
     def __str__(self):
         output = ''
         for h in range(self.grid_height):
             for l in range(self.grid_len):
-                contents = self.G.nodes[(l, self.grid_height-1-h)]['visited']
-                if l < self.grid_len-1:
+                contents = self.G.nodes[(l, self.grid_height - 1 - h)]['visited']
+                if l < self.grid_len - 1:
                     output += '{}'.format(contents)
                 else:
                     output += '{}\n'.format(contents)
-        #somthing like
+        # somthing like
         #  '[] [] [1,2]
         #   [] [2,3] []'                                                                                                            
         return output
-    
+
     def move(self, next_node):
-        #next_node is a dictionary 
-        #next_node = {robot:[position, attack_indicator]}
-        #check whether the number of attacked robots is greater than 
-        #the ALPHA
+        # next_node is a dictionary
+        # next_node = {robot:[position, attack_indicator]}
+        # check whether the number of attacked robots is greater than
+        # the ALPHA
         num_att = 0
         for robot in next_node:
             num_att += next_node[robot][1]
         assert num_att <= self.ALPHA, 'more than ALPHA robots are attacked'
-        #update number of attacks left
+        # update number of attacks left
         self.alpha = self.ALPHA - num_att
         for robot in self.paths_robots:
             self.paths_robots[robot].append(next_node[robot][0])
             self.paths_attackers[robot].append(next_node[robot][1])
-        if self.turn == 'attacker':
+        if self.turn == 'robot':
             self.horizon -= 1
-            self.turn = 'robot'
-        else:
             self.turn = 'attacker'
+        else:
+            self.turn = 'robot'
         self.currNode = next_node
-        
+
     def legal_moves(self, currNode):
         """
         currNode = {robot:[position, attack_indicator]}
@@ -102,14 +103,14 @@ class GameState:
         """
         if self.turn == 'robot':
             possible_moves = {}
-            #check if budget has been used up
+            # check if budget has been used up
             if self.horizon <= 0:
-                #print('Time up!')
+                # print('Time up!')
                 return possible_moves
             for robot in currNode:
                 curr_pos = currNode[robot][0]
-                #if the robot is already attacked
-                #stay in the same place
+                # if the robot is already attacked
+                # stay in the same place
                 if currNode[robot][1]:
                     possible_moves[robot] = [curr_pos]
                 else:
@@ -117,15 +118,15 @@ class GameState:
             return possible_moves
         else:
             possible_moves = []
-            #check if budget has been used up
+            # check if budget has been used up
             if self.horizon <= 0:
                 print('Time up!')
                 return possible_moves
-            #attacked robots so far
+            # attacked robots so far
             attacked = []
-            #survided robots so far
+            # survided robots so far
             survided = []
-            #attack_indicator
+            # attack_indicator
             move_ind = {}
             for robot in currNode:
                 move_ind[robot] = currNode[robot][1]
@@ -133,25 +134,27 @@ class GameState:
                     attacked.append(robot)
                 else:
                     survided.append(robot)
-            
-            for i in range(0, self.alpha+1):
-                possible_moves.append(move_ind)
+            # default choice for the attacker is to do nothing
+            # the loop will add more options/actions for the attacker to choose
+            # they all start from the current attack state and set some new 1's to indicate new attacks
+            possible_moves.append(move_ind)
+            for i in range(0, self.alpha + 1):
                 for j in list(combinations(survided, i)):
-                    #if i=0 j=() empty tuple
-                    #current attack indicator
+                    # if i=0 j=() empty tuple
+                    # current attack indicator
                     move = copy.deepcopy(move_ind)
-                    #each j is a tuple of robots to be attacked
-                    #for example if i = 2, j may be like (2,3)
+                    # each j is a tuple of robots to be attacked
+                    # for example if i = 2, j may be like (2,3)
                     for r in j:
-                        #each robot in tuple j will be attacked
+                        # each robot in tuple j will be attacked
                         move[r] = 1
                     possible_moves.append(move)
             return possible_moves
-                                        
+
     def transition_function(self, next_node):
-        #verify that the next position is legal
-        #next_node = {robot:[position, attack_indicator]}
-        if self.turn == 'robot': 
+        # verify that the next position is legal
+        # next_node = {robot:[position, attack_indicator]}
+        if self.turn == 'robot':
             for robot in next_node:
                 assert next_node[robot][0] in self.legal_moves(self.currNode)[robot]
         else:
@@ -159,22 +162,22 @@ class GameState:
             for robot in next_node:
                 attack_move[robot] = next_node[robot][1]
             assert attack_move in self.legal_moves(self.currNode)
-        #First, make a copy of the current state
+        # First, make a copy of the current state
         new_state = copy.deepcopy(self)
-        
-        #Then, apply the action to produce the new state
+
+        # Then, apply the action to produce the new state
         new_state.move(next_node)
-        
+
         return new_state
-    
+
     def is_terminal(self):
         if self.horizon > 0:
             return False
         else:
             return True
-        
+
     def collected_reward(self):
-        #compute the reward associated with the current state
+        # compute the reward associated with the current state
         total = 0
         nodes = []
         for robot in self.paths_robots:
@@ -183,16 +186,17 @@ class GameState:
         for node in nodes:
             total += self.G.nodes[node]['reward']
         return total
-        
-def test(starts=[(0,0),(4,0)]):
+
+
+def test(starts=[(0, 0), (4, 0)]):
     gamestate = GameState(starts)
     print(gamestate.__str__())
     legal_moves = gamestate.legal_moves(starts)
-    gamestate.move((1,0))
+    gamestate.move((1, 0))
     print(gamestate.__str__())
     pos = {}
     labels = {}
     for node in gamestate.G.nodes:
         pos[node] = node
         labels[node] = gamestate.G.nodes[node]['reward']
-    nx.draw(gamestate.G, pos=pos, with_labels = True)
+    nx.draw(gamestate.G, pos=pos, with_labels=True)
