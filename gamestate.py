@@ -16,19 +16,24 @@ from itertools import combinations
 
 
 class GameState:
-    def __init__(self, G, starts):
+    def __init__(self, G, starts, turn, horizon, alpha):
         # starts = {robot:[position, attack_indicator]}
         # define world map
         self.G = G
-        self.horizon = 4
+        self.horizon = horizon
         # turn = 'robot' or 'attacker'
         # self.turn will decide the legal_moves
         # and horizon
-        self.turn = 'attacker'
+        # who take the first step
+        self.firstTurn = turn
+        # who take the second step
+        self.secTurn = 'robot' if turn != 'robot' else 'attacker'
+        # current turn
+        self.turn = turn
         # number of total attacks
-        self.ALPHA = 2
+        self.ALPHA = alpha
         # number of attacks left
-        self.alpha = 2
+        self.alpha = alpha
         #        
         # trajectories/paths of robots and attackers
         # {robot:[t0,t1,...]}
@@ -81,11 +86,11 @@ class GameState:
         for robot in self.paths_robots:
             self.paths_robots[robot].append(next_node[robot][0])
             self.paths_attackers[robot].append(next_node[robot][1])
-        if self.turn == 'robot':
+        if self.turn != self.firstTurn:
             self.horizon -= 1
-            self.turn = 'attacker'
+            self.turn = self.firstTurn
         else:
-            self.turn = 'robot'
+            self.turn = self.secTurn
         self.currNode = next_node
 
     def legal_moves(self, currNode):
