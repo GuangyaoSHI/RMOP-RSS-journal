@@ -37,7 +37,7 @@ def mcts_process(game, budget=400):
     nextNode = action_selection(MCTS)
     return (nextNode, MCTS)
 
-def play_game(budget, start, board, horizon, alpha):
+def play_game(budget, start, board, horizon, alpha, robot_policy, attacker_policy):
     # starts = {0: [(0, 0), 0], 1: [(0, 0), 0], 2: [(0, 0), 0], 3: [(0, 0), 0]}
     # starts = {0: [(0, 1), 0], 1: [(0, 1), 0], 2: [(0, 0), 0], 3: [(0, 0), 0]}
     # start a game
@@ -56,19 +56,27 @@ def play_game(budget, start, board, horizon, alpha):
     path = [start]
 
     # keep track of all trees
-    trees = {'attacker': [], 'robot': []}
+    # trees = {'attacker': [], 'robot': []}
     while not game.is_terminal():
         # check this is the right turn
         assert game.firstTurn == turn, 'it should be ' + turn + ' turn'
-        next_node, mcts = mcts_process(game, budget)
-        trees[game.turn].append(mcts)
+        if robot_policy == 'mcts':
+            next_node, mcts = mcts_process(game, budget)
+        else:
+            random_policy = RandomPolicy()
+            next_node = random_policy.move(game)
+        # trees[game.turn].append(mcts)
         game.move(next_node)
         # path.append(next_node)
         # check that it's another player's turn
         assert game.turn != turn, 'it should not be ' + turn + ' turn'
         # initialize a mcts object for attackers
-        next_node, mcts = mcts_process(game, budget)
-        trees[game.turn].append(mcts)
+        if attacker_policy == 'mcts':
+            next_node, mcts = mcts_process(game, budget)
+            # trees[game.turn].append(mcts)
+        else:
+            random_policy = RandomPolicy()
+            next_node = random_policy.move(game)
         game.move(next_node)
         path.append(next_node)
     # with open("trees"+str(game_round)+".txt", "wb") as fp:  # Pickle
