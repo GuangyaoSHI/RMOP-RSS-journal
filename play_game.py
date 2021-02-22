@@ -15,6 +15,16 @@ import matplotlib.pyplot as plt
 import random
 import pickle
 
+def generate_grid_map(grid_len, grid_height, parameters):
+    # generate a grid graph with size=(grid_len, grid_height)
+    # parameters are for probability distribution. Here we use exponential distribution
+    graph = nx.grid_2d_graph(grid_len, grid_height)
+    values = np.random.exponential(scale=parameters, size=(grid_len * grid_height,))
+    values = np.around(values * 20)
+    values = values.astype(int)
+    reward = dict(zip(list(graph.nodes), values))
+    nx.set_node_attributes(graph, reward, 'reward')
+    return graph
 
 def mcts_process(game, budget=400):
     '''
@@ -60,18 +70,30 @@ def play_game(budget, start, board, horizon, alpha, robot_policy, attacker_polic
     while not game.is_terminal():
         # check this is the right turn
         assert game.firstTurn == turn, 'it should be ' + turn + ' turn'
-        if robot_policy == 'mcts':
+        if attacker_policy == 'mcts':
             next_node, mcts = mcts_process(game, budget)
+            # print('current game state {}'.format(game.currNode))
+            # print('attacker next move {}'.format(next_node))
+            num_att = 0
+            for robot in next_node:
+                num_att += next_node[robot][1]
+            assert num_att <= game.ALPHA, 'more than ALPHA robots are attacked'
         else:
             random_policy = RandomPolicy()
             next_node = random_policy.move(game)
+            # print('current game state {}'.format(game.currNode))
+            # print('attacker next move {}'.format(next_node))
+            num_att = 0
+            for robot in next_node:
+                num_att += next_node[robot][1]
+            assert num_att <= game.ALPHA, 'more than ALPHA robots are attacked'
         # trees[game.turn].append(mcts)
         game.move(next_node)
         # path.append(next_node)
         # check that it's another player's turn
         assert game.turn != turn, 'it should not be ' + turn + ' turn'
         # initialize a mcts object for attackers
-        if attacker_policy == 'mcts':
+        if robot_policy == 'mcts':
             next_node, mcts = mcts_process(game, budget)
             # trees[game.turn].append(mcts)
         else:
@@ -118,7 +140,16 @@ if __name__ == "__main__":
     #         rewards[budget].append(play_game(budget, game_round))
     # with open("rewards"+".txt", "wb") as fp:  # Pickle
     #     pickle.dump(rewards, fp)
-    play_game(800, 'gif')
+    budget = 200
+    start = {0: [(0, 1), 0], 1: [(5, 1), 0], 2: [(6, 6), 0], 3: [(10, 10), 0]}
+    graph = generate_grid_map(15, 15, 1)
+    horizon = 4
+    alpha = 2
+    robot_policy = 'random'
+    attacker_policy = 'mcts'
+    game = play_game(budget, start, graph, horizon, alpha, robot_policy, attacker_policy)
+    print('reward is {}'.format(game.collected_reward()))
+
 
 
 

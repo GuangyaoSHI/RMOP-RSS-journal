@@ -44,3 +44,11 @@ from graphviz import Source
 
 s = Source.from_file('MCTS.dot')
 s.view()
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+all_data = [np.random.normal(0, std, size=100) for std in range(1, 4)]
+
+# https://www.geeksforgeeks.org/box-plot-in-python-using-matplotlib/
+# https://matplotlib.org/stable/gallery/statistics/boxplot_color.html#sphx-glr-gallery-statistics-boxplot-color-py

@@ -6,8 +6,6 @@ Created on Sun Jan  3 19:42:15 2021
 """
 import networkx as nx
 import matplotlib.pyplot as plt
-from gamestate_no_attack import *
-from policies_no_attack import *
 import random
 import copy
 from itertools import combinations

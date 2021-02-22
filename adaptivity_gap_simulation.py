@@ -42,8 +42,13 @@ for param in params:
     graphs.append(graph)
     # plot_grid_map(graph)
 
+# with open("graphs.txt", "rb") as fp:  # Unpickling
+#     # graphs_adap = [results_adap]
+#     graphs = pickle.load(fp)
+
+
 # robot parameters
-horizon = 4
+horizon = 3
 # number of robots
 N = 4
 # number of total attacks
@@ -51,7 +56,7 @@ alpha = 2
 # iteration budget
 budgets = [200, 400, 600, 800, 1000]
 # generate starting positions of robots
-starts = [random.sample(list(graphs[0].nodes), N) for i in range(5)]
+starts = [random.sample(list(graphs[0].nodes), N) for i in range(10)]
 
 # results for all graphs
 graphs_adap = []
@@ -63,52 +68,17 @@ for graph in graphs:
         state = [[pos, 0] for pos in start_]
         start = dict(zip(range(N), state))
         # brute_force non-adaptive method
-        # path_attack is a tuple (path, attacks)
-        path_attack = brute_force(start, graph, horizon, alpha)
-        results_adap['bruteforce'].append(path_attack)
+        # path_attack is a reward
+        reward_worst = brute_force(start, graph, horizon, alpha)
+        results_adap['bruteforce'].append(reward_worst)
         # MCTS methods with different budgets
         for budget in budgets:
             # change play_game with attacker behavior arg
             # each budget run for 5 times
             for i in range(5):
-                game = play_game(budget, start, graph, horizon, alpha, 'mcts')
+                game = play_game(budget, start, graph, horizon, alpha, 'mcts', 'mcts')
                 results_adap['AdversarialMCTS'][budget].append(game)
     graphs_adap.append(results_adap)
 
 with open("graphs_adap" + ".txt", "wb") as fp:  # Pickle
     pickle.dump(graphs_adap, fp)
-
-# compare different methods
-# robot parameters
-horizon = 10
-# number of robots
-N = 4
-# number of total attacks
-alpha = 2
-# iteration budget
-budgets = [800] * 3
-
-graphs_comparison =[]
-for graph in graphs:
-    # Todo: policy of robots that doesn't consider attacks
-    results_compare = {'AMCTS_VS_AMCTS': dict(zip(budgets, [[]] * len(budgets))),
-                       'AMCTS_VS_random': dict(zip(budgets, [[]] * len(budgets))),
-                       'random_VS_AMCTS': dict(zip(budgets, [[]] * len(budgets))),
-                       'random_VS_random': dict(zip(budgets, [[]] * len(budgets)))
-                       }
-    for start in starts:
-        # MCTS methods with different budgets
-        for budget in budgets:
-            # change play_game with attacker behavior arg
-            game = play_game(budget, start, graph, horizon, alpha, 'mcts', 'mcts')
-            results_compare['AMCTS_VS_AMCTS'][budget].append(game)
-            game = play_game(budget, start, graph, horizon, alpha, 'mcts', 'random')
-            results_compare['AMCTS_VS_random'][budget].append(game)
-            game = play_game(budget, start, graph, horizon, alpha, 'random', 'mcts')
-            results_compare['random_VS_AMCTS'][budget].append(game)
-            game = play_game(budget, start, graph, horizon, alpha, 'random', 'random')
-            results_compare['random_VS_random'][budget].append(game)
-    graphs_comparison.append(results_compare)
-
-with open("compare_different_methods" + ".txt", "wb") as fp:  # Pickle
-    pickle.dump(graphs_comparison, fp)

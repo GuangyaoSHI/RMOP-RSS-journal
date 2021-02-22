@@ -49,7 +49,7 @@ def brute_force(start, board, horizon, alpha):
     # print('one choice time spent is {}'.format(end - start))
     #
     # print('worst-case reward is {}'.format(reward_max))
-    return path_attack
+    return reward_max
     # 84
     # np.array([94,88,86,88,88])
     # print('robots paths')
