@@ -31,7 +31,7 @@ def plot_grid_map(grid_graph):
     plt.show()
 
 
-params = [0.1, 0.5, 1, 2]
+params = [0.1, 0.4, 0.8, 1.6]
 grid_len = 15
 grid_height = 15
 graphs = []
@@ -56,7 +56,7 @@ alpha = 2
 # iteration budget
 budget = 500
 # generate starting positions of robots
-starts = [random.sample(list(graphs[0].nodes), N) for i in range(5)]
+starts = [random.sample(list(graphs[0].nodes), N) for i in range(10)]
 
 graphs_comparison = []
 for graph in graphs:

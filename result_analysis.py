@@ -51,8 +51,8 @@ for i in range(len(graphs_compare)):
                      vert=True,
                      # patch_artist=True,
                      labels=labels)
-    axs.set_title('graph' + str(i))
-    axs.set_xlabel('different groups')
-    axs.set_ylabel('reward')
+    axs.set_title('Compare different strategies: robot-adversary')
+    # axs.set_xlabel('different groups')
+    axs.set_ylabel('Normalized reward')
     plt.show()
     fig.savefig('graph' + str(i) + '-' + 'comparison' + '.pdf')
