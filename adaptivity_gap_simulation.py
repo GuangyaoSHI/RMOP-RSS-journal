@@ -20,6 +20,16 @@ def generate_grid_map(grid_len, grid_height, parameters):
     nx.set_node_attributes(graph, reward, 'reward')
     return graph
 
+def generate_sparse_graph(graph):
+    sparse_G = copy.deepcopy(graph)
+    # try to remove some edges
+    for i in range(int(len(list(graph))/2)):
+        edge = random.sample(list(sparse_G.edges), 1)[0]
+        G = copy.deepcopy(sparse_G)
+        G.remove_edge(*edge)
+        if nx.is_connected(G):
+            sparse_G.remove_edge(*edge)
+    return sparse_G
 
 def plot_grid_map(grid_graph):
     pos = {}
@@ -31,7 +41,8 @@ def plot_grid_map(grid_graph):
     plt.show()
 
 
-params = [0.5, 1, 2, 4]
+# params = [0.3, 0.6, 0.8, 1.2]
+params = [0.6, 0.8]
 grid_len = 15
 grid_height = 15
 graphs = []
@@ -39,6 +50,7 @@ graphs = []
 # generate maps
 for param in params:
     graph = generate_grid_map(grid_len, grid_height, param)
+    graph = generate_sparse_graph(graph)
     graphs.append(graph)
     # plot_grid_map(graph)
 
@@ -54,9 +66,9 @@ N = 4
 # number of total attacks
 alpha = 2
 # iteration budget
-budgets = [200, 400, 600, 800, 1000]
+budgets = [100, 200, 400, 600, 800]
 # generate starting positions of robots
-starts = [random.sample(list(graphs[0].nodes), N) for i in range(10)]
+starts = [random.sample(list(graphs[0].nodes), N) for i in range(5)]
 
 # results for all graphs
 graphs_adap = []

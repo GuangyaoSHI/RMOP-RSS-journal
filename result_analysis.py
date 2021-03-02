@@ -15,7 +15,7 @@ for i in range(len(graphs_adap)):
     result_adap = graphs_adap[i]
     fig, axs = plt.subplots()
     # labels are about budgets
-    budgets = [200, 400, 600, 800, 1000]
+    budgets = [100, 200, 400, 600, 800]
     all_data = []
     for budget in budgets:
         data = [game.collected_reward() for game in result_adap['AdversarialMCTS'][budget]]
@@ -40,13 +40,19 @@ for i in range(len(graphs_compare)):
     fig, axs = plt.subplots()
     all_data = []
     max_reward = 0
-    for key in result_compare:
+    keys = ['random_VS_AMCTS',
+            'random_VS_random',
+            'MCTS_VS_AMCTS',
+            'MCTS_VS_random',
+            'AMCTS_VS_AMCTS',
+            'AMCTS_VS_random']
+    for key in keys:
         new_data = np.array([game.collected_reward() for game in result_compare[key]])
         if np.amax(new_data) > max_reward:
             max_reward = np.amax(new_data)
         all_data.append(new_data)
     all_data = [data/max_reward for data in all_data]
-    labels = ['Ma-Ma', 'Ma-R', 'R-Ma', 'R-R', 'M-Ma', 'M-R']
+    labels = ['R-Ma', 'R-R', 'M-Ma', 'M-R', 'Ma-Ma', 'Ma-R']
     bp = axs.boxplot(all_data,
                      vert=True,
                      # patch_artist=True,
