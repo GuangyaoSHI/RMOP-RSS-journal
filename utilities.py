@@ -58,7 +58,21 @@ def plot_reward_map(gamestate, ax):
     for node in gamestate.G.nodes:
         pos[node] = node
         labels[node] = gamestate.G.nodes[node]['reward']
-    nx.draw(gamestate.G, pos=pos, ax=ax, labels=labels, with_labels=True)
+    pos = nx.get_node_attributes(gamestate.G, 'position')
+    reward = nx.get_node_attributes(gamestate.G, 'reward')
+    R = [gamestate.G.nodes[node]['reward'] for node in gamestate.G.nodes]
+    cm = plt.get_cmap('jet')
+    node_sizes = [100 + gamestate.G.nodes[node]['reward'] * 20 for node in gamestate.G.nodes]
+    labels = dict(zip(gamestate.G.nodes, [i for i in range(len(gamestate.G.nodes))]))
+    nx.draw(gamestate.G, pos=pos, ax=ax, labels=labels, with_labels=False,
+            font_size=7, font_color='m', node_size=node_sizes, width=1, alpha=0.8,
+            node_color=R, cmap=cm)
+    nx.draw_networkx_labels(gamestate.G, pos=pos, labels=labels, font_size=13, font_weight='bold', horizontalalignment='left',
+                            verticalalignment='bottom')
+    sm = plt.cm.ScalarMappable(cmap=cm)
+    sm._A = []
+    plt.colorbar(sm)
+
 
 
 def plot_path(path, ax, style):

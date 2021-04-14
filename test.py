@@ -52,3 +52,23 @@ all_data = [np.random.normal(0, std, size=100) for std in range(1, 4)]
 
 # https://www.geeksforgeeks.org/box-plot-in-python-using-matplotlib/
 # https://matplotlib.org/stable/gallery/statistics/boxplot_color.html#sphx-glr-gallery-statistics-boxplot-color-py
+
+
+import matplotlib.pyplot as plt
+from PIL import Image
+img = Image.open('0.png').convert('LA')
+img.save('tunnel.png')
+img = plt.imread('tunnel.png')
+
+from skimage import io
+img = io.imread('0.png', as_gray=True)
+img1 = img[10:1000, 600:1120]
+fig, ax = plt.subplots()
+ax.imshow(img1, cmap=plt.get_cmap('gray'), vmin=0, vmax=1)
+# ax.scatter([600, 750], [400, 100])
+plt.show()
+
+for node in game.G.nodes:
+    pos = coordinates[index2coordinates[node]-1]
+    game.G.nodes[node]['position'] = (pos[0], 950-pos[1])
+
